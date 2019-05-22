@@ -1,0 +1,334 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+
+<title>Potato Invaders</title>
+<link rel="shortcut icon" type="image/jpg" href="https://www.publicdomainpictures.net/pictures/10000/velka/potatoes-8712827492639FE9.jpg"/>
+
+</head>
+
+<body style="background-image:url(https://cdn.pixabay.com/photo/2013/11/26/20/19/potato-218865_1280.jpg)">
+
+<h1>Potato Invaders</h1>
+<h3>By Mason Lewis</h3>
+<canvas id="myCanvas" width="480" height="320"></canvas>
+<p style = "color: white">Use the arrow keys to move left and right, up to shoot</p>
+
+<style>canvas { background: #eee; }</style>
+
+<script>
+
+/**************************************************
+*          COPYRIGHT Mage J Lewis 2019           *
+*
+**************************************************/
+//vars to work the canvas
+var canvas = document.getElementById("myCanvas");
+var ctx = canvas.getContext("2d");
+
+//key contol vars
+var rightPressed = false;
+var leftPressed = false;
+var upPressed = false;
+
+var potatoDirection;
+var killCount;
+var timer;
+var potatoesLayout;
+var potatoes;
+var potatoBullets;
+var player;
+var playerBullet;
+var potatoBullet;
+
+function setupVars(){
+//initial speed of the potato
+potatoDirection = 1;
+//how many potatoes have been killed
+killCount = 0;
+//Keeps track of time
+timer = 0;
+//dictionary holding info for the potato grid
+potatoesLayout = {
+	rows: 4,
+	columns: 6,
+	width: 14,
+	height: 14,
+	padding: 10,
+	xOffset: 10,
+	yOffset: 30
+}
+//actual potato grid, and grid for its bullets
+potatoes = [];
+potatoBullets = [];
+//player dictionaries
+player = {x:canvas.width/2, 
+		y:canvas.height-30,
+		width: 25, 
+		height: 20,
+		lives: 3};
+playerBullet = {x:-10, 
+				y:-10, 
+				width: 3,
+				height: 5,
+				firing:false};
+//dictionary with information on potato bullets
+potatoBullet = {x:-10,
+				y:-10,
+				width:3,
+				height:3,
+				firing:false};
+					
+//initializes the potato matrix
+for(var c=0; c<potatoesLayout.columns; c++){
+		potatoes[c] = [];
+		potatoBullets[c] = [];
+	for(var r = 0; r<potatoesLayout.rows; r++){
+		potatoes[c][r] = {x:0, y:0, status: 1, width: potatoesLayout.width, height:potatoesLayout.height};
+		potatoBullets[c][r] = {x:-10,y:-10,width:potatoBullet.width,height:potatoBullet.height, firing: false};
+	}
+}
+}
+//collision detection for the potato matrix
+function collisionPotatoes(){
+	for(var c=0; c<potatoesLayout.columns; c++){
+		for(var r = 0; r<potatoesLayout.rows; r++){
+			var tater = potatoes[c][r];
+			if (tater.status == 1){	
+				if(playerBullet.x > tater.x && playerBullet.x<tater.x+potatoesLayout.width && playerBullet.y > tater.y && playerBullet.y<tater.y+potatoesLayout.height){
+					tater.status =0;
+					playerBullet.firing = false;
+					playerBullet.x = -10;
+					playerBullet.y = -10;
+					killCount += 1;
+				}
+			}
+		}
+	}
+}
+
+//draws the potato matrix
+function drawPotatoes(){
+	for(var c = 0; c<potatoesLayout.columns; c++){
+		for(var r = 0; r<potatoesLayout.rows; r++){
+			if(potatoes[c][r].status == 1){
+				var X = (c*(potatoesLayout.width + potatoesLayout.padding) + potatoesLayout.xOffset);
+				var Y = (r*(potatoesLayout.height + potatoesLayout.padding) + potatoesLayout.yOffset);
+				potatoes[c][r].x = X;
+				potatoes[c][r].y = Y;
+				ctx.beginPath();
+				ctx.rect(X,Y,potatoesLayout.width,potatoesLayout.height);
+				ctx.fillStyle = "#A04C1E";
+				ctx.fill();
+				ctx.closePath();
+				
+			}
+			var bullet = potatoBullets[c][r];
+			ctx.beginPath();
+			ctx.rect(bullet.x,bullet.y,bullet.width,bullet.height);
+			ctx.fillStyle = "#A04C1E";
+			ctx.fill();
+			ctx.closePath();
+		}
+	} 
+}
+
+//draws the player
+function drawPlayer() {
+    ctx.beginPath();
+    ctx.rect(player.x, player.y, player.width, player.height);
+    ctx.fillStyle = "#0095DD";
+    ctx.fill();
+    ctx.closePath();
+}
+
+//draws the player bullet
+function drawBullets(){
+	ctx.beginPath();
+	ctx.rect(playerBullet.x, playerBullet.y, playerBullet.width, playerBullet.height);
+	ctx.fillStyle = "#0095DD"
+	ctx.fill();
+	ctx.closePath();		
+}
+
+//moves the potato matrix
+function movePotatoes(){
+	potatoesLayout.xOffset += potatoDirection;
+	if(potatoesLayout.xOffset+potatoesLayout.columns*(potatoesLayout.width+potatoesLayout.padding)>canvas.width || potatoesLayout.xOffset<0){
+		potatoDirection *= -1;
+		potatoesLayout.yOffset +=4;
+	}
+}
+
+//generates a random number between a min and max, used for the potatoes bullets
+function random(min,max){
+  return Math.random() * (max - min) + min;
+}
+
+//moves all the bullets
+function updateBullets(){
+	if(playerBullet.firing == true){
+		playerBullet.y -= 4;
+	}
+	for(var c=0; c<potatoesLayout.columns; c++){
+		for(var r = 0; r<potatoesLayout.rows; r++){
+			var bullet = potatoBullets[c][r];
+			var tater = potatoes[c][r];
+			if(tater.status == 1){
+				if(bullet.firing == false && random(-100,1)>0){
+					bullet.firing = true;
+					bullet.x = tater.x+tater.width/2;
+					bullet.y = tater.y;
+				}
+				
+			}
+			if(bullet.firing == true){
+				bullet.y +=1.5;
+			}
+			if(touching(bullet,player)){
+				player.lives -=1;
+			}
+			if(bullet.y>canvas.height || touching(bullet,player)){
+				bullet.x = -10;
+				bullet.y = -10;
+				bullet.firing = false;
+				
+		}
+	}	
+}
+
+	if(playerBullet.y < 0 ){
+		playerBullet.firing = false;
+		playerBullet.x = -10;
+		playerBullet.y = -10;
+	}
+	
+}
+
+//writes text to the screen used for the game over message
+function drawMessage(text){
+	ctx.font = "30px Arial";
+	ctx.textAlign = "center";
+	ctx.fillStyle = "#A04C1E"
+	ctx.fillText(text,canvas.width/2,canvas.height/2);
+	ctx.fillText("Refresh the page to restart.", canvas.width/2,canvas.height/2+30);
+	
+}
+
+//decides when the game is over, and who wins
+function gameOverHandler(){
+	if(player.lives <= 0){
+		ctx.clearRect(0,0,canvas.width,canvas.height);
+		drawMessage("The Potatoes Have Defeated You!");
+		displayLives();
+	}
+	for(var c = 0; c<potatoesLayout.columns; c++){
+		for(var r = 0; r<potatoesLayout.rows; r++){
+			var tater = potatoes[c][r];
+			if(tater.status == 1){
+				if(tater.y>player.y){
+					ctx.clearRect(0,0,canvas.width,canvas.height);
+					drawMessage("The Potatoes Have Defeated You!");
+					displayLives();
+				}
+			}
+		}
+	}
+	if(killCount >= potatoesLayout.rows*potatoesLayout.columns){
+		ctx.clearRect(0,0,canvas.width,canvas.height);
+		drawMessage("You Win, Congratulations!");
+		displayLives();
+	}
+	
+}
+
+//the next 2 functions are for keyboard input
+function keyDownHandler(e){
+	if(e.key == "Right" || e.key == "ArrowRight"){
+		rightPressed = true;
+	}
+	if(e.key == "Left" || e.key == "ArrowLeft"){
+		leftPressed = true;
+	}
+	if(e.key == "Up" || e.key == "ArrowUp"){
+		upPressed = true;
+	}
+}
+function keyUpHandler(e){
+	if(e.key == "Right" || e.key == "ArrowRight"){
+		rightPressed = false;
+	}
+	if(e.key == "Left" || e.key == "ArrowLeft"){
+		leftPressed = false;
+	}
+	if(e.key == "Up" || e.key == "ArrowUp"){
+		upPressed = false;
+	}
+}
+
+//determines if one body is touching another
+function touching(body1,body2){
+	if(body1.x >= body2.x && body1.x <= body2.x+body2.width){
+		var xSame = true;
+	}
+	if(body1.y >= body2.y && body1.y <= body2.y+body2.height){
+		var ySame = true;
+	}
+	if(xSame == true && ySame == true){
+		return 1;
+	} else{ 
+		return 0;
+	}
+}
+
+//shows how many lives the player has, and shows the timer
+function displayLives(){
+	ctx.fillStyle = "#000000"
+	ctx.font = "15px Arial";
+	ctx.textAlign = "center"
+	ctx.fillText("Player Lives: "+player.lives,50,20);
+	ctx.fillText("Time: "+Math.floor(timer),canvas.width-100,20);
+}
+
+setupVars();
+//main game loop
+function main() {
+    if(player.lives>0){
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	if(rightPressed == true && player.x <= canvas.width-player.width){
+		player.x += 2;
+	}	
+	if(leftPressed == true && player.x >= 0){
+		player.x -= 2;
+	}
+	if(upPressed == true && playerBullet.firing == false){
+		playerBullet.firing = true;
+		playerBullet.x = player.x+(player.width/2);
+		playerBullet.y = player.y;
+	}
+	collisionPotatoes();
+	displayLives();
+	updateBullets();
+	movePotatoes();
+    drawPlayer();
+	drawBullets();
+	drawPotatoes();
+	gameOverHandler();
+	}
+	if(killCount<potatoesLayout.rows*potatoesLayout.columns && player.lives>0){
+		timer += 0.01;
+	}
+}
+
+//required for keyboard input
+document.addEventListener("keydown", keyDownHandler, false);
+document.addEventListener("keyup", keyUpHandler, false);
+
+//required for game loop
+setInterval(main, 10);
+</script>
+
+</body>
+
+</html>

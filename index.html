@@ -18,6 +18,7 @@
 <style>canvas { background: #eee; }</style>
 
 <script>
+
 /**************************************************
 *          COPYRIGHT Mage J Lewis 2019           *
 *
@@ -25,28 +26,25 @@
 //vars to work the canvas
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
+
 //key contol vars
 var rightPressed = false;
 var leftPressed = false;
 var upPressed = false;
+
 var potatoDirection;
 var killCount;
 var timer;
 var potatoesLayout;
 var potatoes;
 var potatoBullets;
-var player = {x:canvas.width/2, 
-		y:canvas.height-30,
-		width: 25, 
-		height: 20,
-		lives: 3};;
+var player;
 var playerBullet;
 var potatoBullet;
-var level = 1;
-var score = 0;
+
 function setupVars(){
 //initial speed of the potato
-potatoDirection = 1+Math.floor(level/10);
+potatoDirection = 1;
 //how many potatoes have been killed
 killCount = 0;
 //Keeps track of time
@@ -54,32 +52,33 @@ timer = 0;
 //dictionary holding info for the potato grid
 potatoesLayout = {
 	rows: 4,
-	columns: Math.floor(6+level/10),
+	columns: 6,
 	width: 14,
 	height: 14,
 	padding: 10,
 	xOffset: 10,
-	yOffset: 30+level
+	yOffset: 30
 }
 //actual potato grid, and grid for its bullets
 potatoes = [];
 potatoBullets = [];
 //player dictionaries
 player = {x:canvas.width/2, 
-	y:canvas.height-30,
-	width: 25+Math.floor(level/2), 
-	height: 20};
+		y:canvas.height-30,
+		width: 25, 
+		height: 20,
+		lives: 3};
 playerBullet = {x:-10, 
-		y:-10, 
-		width: 3,
-		height: 5,
-		firing:false};
+				y:-10, 
+				width: 3,
+				height: 5,
+				firing:false};
 //dictionary with information on potato bullets
 potatoBullet = {x:-10,
-		y:-10,
-		width:3,
-		height:3,
-		firing:false};
+				y:-10,
+				width:3,
+				height:3,
+				firing:false};
 					
 //initializes the potato matrix
 for(var c=0; c<potatoesLayout.columns; c++){
@@ -108,6 +107,7 @@ function collisionPotatoes(){
 		}
 	}
 }
+
 //draws the potato matrix
 function drawPotatoes(){
 	for(var c = 0; c<potatoesLayout.columns; c++){
@@ -133,6 +133,7 @@ function drawPotatoes(){
 		}
 	} 
 }
+
 //draws the player
 function drawPlayer() {
     ctx.beginPath();
@@ -141,6 +142,7 @@ function drawPlayer() {
     ctx.fill();
     ctx.closePath();
 }
+
 //draws the player bullet
 function drawBullets(){
 	ctx.beginPath();
@@ -149,18 +151,21 @@ function drawBullets(){
 	ctx.fill();
 	ctx.closePath();		
 }
+
 //moves the potato matrix
 function movePotatoes(){
 	potatoesLayout.xOffset += potatoDirection;
 	if(potatoesLayout.xOffset+potatoesLayout.columns*(potatoesLayout.width+potatoesLayout.padding)>canvas.width || potatoesLayout.xOffset<0){
 		potatoDirection *= -1;
-		potatoesLayout.yOffset +=4+Math.floor(level/10);
+		potatoesLayout.yOffset +=4;
 	}
 }
+
 //generates a random number between a min and max, used for the potatoes bullets
 function random(min,max){
   return Math.random() * (max - min) + min;
 }
+
 //moves all the bullets
 function updateBullets(){
 	if(playerBullet.firing == true){
@@ -192,6 +197,7 @@ function updateBullets(){
 		}
 	}	
 }
+
 	if(playerBullet.y < 0 ){
 		playerBullet.firing = false;
 		playerBullet.x = -10;
@@ -199,6 +205,7 @@ function updateBullets(){
 	}
 	
 }
+
 //writes text to the screen used for the game over message
 function drawMessage(text){
 	ctx.font = "30px Arial";
@@ -208,16 +215,11 @@ function drawMessage(text){
 	ctx.fillText("Refresh the page to restart.", canvas.width/2,canvas.height/2+30);
 	
 }
-//stops the code for a certain amount of time used between levels
-function sleep(delay){
-	var start = new Date().getTime();
-        while (new Date().getTime() < start + delay);
-}
+
 //decides when the game is over, and who wins
 function gameOverHandler(){
 	if(player.lives <= 0){
 		ctx.clearRect(0,0,canvas.width,canvas.height);
-		sleep(100);
 		drawMessage("The Potatoes Have Defeated You!");
 		displayLives();
 	}
@@ -240,6 +242,7 @@ function gameOverHandler(){
 	}
 	
 }
+
 //the next 2 functions are for keyboard input
 function keyDownHandler(e){
 	if(e.key == "Right" || e.key == "ArrowRight"){
@@ -263,6 +266,7 @@ function keyUpHandler(e){
 		upPressed = false;
 	}
 }
+
 //determines if one body is touching another
 function touching(body1,body2){
 	if(body1.x >= body2.x && body1.x <= body2.x+body2.width){
@@ -277,6 +281,7 @@ function touching(body1,body2){
 		return 0;
 	}
 }
+
 //shows how many lives the player has, and shows the timer
 function displayLives(){
 	ctx.fillStyle = "#000000"
@@ -285,6 +290,7 @@ function displayLives(){
 	ctx.fillText("Player Lives: "+player.lives,50,20);
 	ctx.fillText("Time: "+Math.floor(timer),canvas.width-100,20);
 }
+
 setupVars();
 //main game loop
 function main() {
@@ -314,9 +320,11 @@ function main() {
 		timer += 0.01;
 	}
 }
+
 //required for keyboard input
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
+
 //required for game loop
 setInterval(main, 10);
 </script>

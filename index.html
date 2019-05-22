@@ -34,61 +34,67 @@ var upPressed = false;
 
 var potatoDirection;
 var killCount;
-var timer;
 var potatoesLayout;
 var potatoes;
 var potatoBullets;
-var player;
+var player = {x:canvas.width/2, 
+			y:canvas.height-30,
+			width: 25, 
+			height: 20,
+			lives: 3};;
 var playerBullet;
 var potatoBullet;
-
+var level = 1;
+var score = 0;
+var timer = 0;
 function setupVars(){
-//initial speed of the potato
-potatoDirection = 1;
-//how many potatoes have been killed
-killCount = 0;
-//Keeps track of time
-timer = 0;
-//dictionary holding info for the potato grid
-potatoesLayout = {
-	rows: 4,
-	columns: 6,
-	width: 14,
-	height: 14,
-	padding: 10,
-	xOffset: 10,
-	yOffset: 30
-}
-//actual potato grid, and grid for its bullets
-potatoes = [];
-potatoBullets = [];
-//player dictionaries
-player = {x:canvas.width/2, 
-		y:canvas.height-30,
-		width: 25, 
-		height: 20,
-		lives: 3};
-playerBullet = {x:-10, 
-				y:-10, 
-				width: 3,
-				height: 5,
-				firing:false};
-//dictionary with information on potato bullets
-potatoBullet = {x:-10,
-				y:-10,
-				width:3,
-				height:3,
-				firing:false};
-					
-//initializes the potato matrix
-for(var c=0; c<potatoesLayout.columns; c++){
-		potatoes[c] = [];
-		potatoBullets[c] = [];
-	for(var r = 0; r<potatoesLayout.rows; r++){
-		potatoes[c][r] = {x:0, y:0, status: 1, width: potatoesLayout.width, height:potatoesLayout.height};
-		potatoBullets[c][r] = {x:-10,y:-10,width:potatoBullet.width,height:potatoBullet.height, firing: false};
+	//initial speed of the potato
+	potatoDirection = 1+Math.floor(level/10);
+	//how many potatoes have been killed
+	killCount = 0;
+	//dictionary holding info for the potato grid
+	potatoesLayout = {
+		rows: 4,
+		columns: 6+Math.floor(level/15),
+		width: 14-Math.floor(level/7),
+		height: 14,
+		padding: 10,
+		xOffset: 10,
+		yOffset: 30+Math.floor(level/3)
 	}
-}
+	if(potatoesLayout.columns>12){
+		potatoesLayout.columns = 12;
+	}
+	//actual potato grid, and grid for its bullets
+	potatoes = [];
+	potatoBullets = [];
+	//player dictionaries
+	player = {x:canvas.width/2, 
+			y:canvas.height-30,
+			width: 25+Math.floor(level/2), 
+			height: 20,
+			lives: player.lives};
+	playerBullet = {x:-10, 
+					y:-10, 
+					width: 3,
+					height: 5,
+					firing:false};
+	//dictionary with information on potato bullets
+	potatoBullet = {x:-10,
+					y:-10,
+					width:3,
+					height:3,
+					firing:false};
+						
+	//initializes the potato matrix
+	for(var c=0; c<potatoesLayout.columns; c++){
+			potatoes[c] = [];
+			potatoBullets[c] = [];
+		for(var r = 0; r<potatoesLayout.rows; r++){
+			potatoes[c][r] = {x:0, y:0, status: 1, width: potatoesLayout.width, height:potatoesLayout.height};
+			potatoBullets[c][r] = {x:-10,y:-10,width:potatoBullet.width,height:potatoBullet.height, firing: false};
+		}
+	}
 }
 //collision detection for the potato matrix
 function collisionPotatoes(){
@@ -102,6 +108,7 @@ function collisionPotatoes(){
 					playerBullet.x = -10;
 					playerBullet.y = -10;
 					killCount += 1;
+					score += 25;
 				}
 			}
 		}
@@ -157,7 +164,7 @@ function movePotatoes(){
 	potatoesLayout.xOffset += potatoDirection;
 	if(potatoesLayout.xOffset+potatoesLayout.columns*(potatoesLayout.width+potatoesLayout.padding)>canvas.width || potatoesLayout.xOffset<0){
 		potatoDirection *= -1;
-		potatoesLayout.yOffset +=4;
+		potatoesLayout.yOffset +=4+Math.floor(level/10);
 	}
 }
 
@@ -176,7 +183,7 @@ function updateBullets(){
 			var bullet = potatoBullets[c][r];
 			var tater = potatoes[c][r];
 			if(tater.status == 1){
-				if(bullet.firing == false && random(-100,1)>0){
+				if(bullet.firing == false && random(-100+level,1)>0){
 					bullet.firing = true;
 					bullet.x = tater.x+tater.width/2;
 					bullet.y = tater.y;
@@ -216,6 +223,15 @@ function drawMessage(text){
 	
 }
 
+//Pauses the program for a certain number of milliseconds
+function sleep(millis)
+{
+    var date = new Date();
+    var curDate = null;
+    do { curDate = new Date(); }
+    while(curDate-date < millis);
+}
+
 //decides when the game is over, and who wins
 function gameOverHandler(){
 	if(player.lives <= 0){
@@ -236,9 +252,10 @@ function gameOverHandler(){
 		}
 	}
 	if(killCount >= potatoesLayout.rows*potatoesLayout.columns){
-		ctx.clearRect(0,0,canvas.width,canvas.height);
-		drawMessage("You Win, Congratulations!");
+		level+=1;
 		displayLives();
+		sleep(1000);
+		setupVars();
 	}
 	
 }
@@ -288,35 +305,36 @@ function displayLives(){
 	ctx.font = "15px Arial";
 	ctx.textAlign = "center"
 	ctx.fillText("Player Lives: "+player.lives,50,20);
-	ctx.fillText("Time: "+Math.floor(timer),canvas.width-100,20);
+	ctx.fillText("Score: "+score,150,20);
+	ctx.fillText("Level: "+level,canvas.width-100,20);
 }
 
 setupVars();
 //main game loop
 function main() {
-    if(player.lives>0){
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	if(rightPressed == true && player.x <= canvas.width-player.width){
-		player.x += 2;
-	}	
-	if(leftPressed == true && player.x >= 0){
-		player.x -= 2;
+	if(player.lives>0){
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		if(rightPressed == true && player.x <= canvas.width-player.width){
+			player.x += 2;
+		}	
+		if(leftPressed == true && player.x >= 0){
+			player.x -= 2;
+		}
+		if(upPressed == true && playerBullet.firing == false){
+			playerBullet.firing = true;
+			playerBullet.x = player.x+(player.width/2);
+			playerBullet.y = player.y;
+		}
+		collisionPotatoes();
+		displayLives();
+		updateBullets();
+		movePotatoes();
+		drawPlayer();
+		drawBullets();
+		drawPotatoes();
+		gameOverHandler();
 	}
-	if(upPressed == true && playerBullet.firing == false){
-		playerBullet.firing = true;
-		playerBullet.x = player.x+(player.width/2);
-		playerBullet.y = player.y;
-	}
-	collisionPotatoes();
-	displayLives();
-	updateBullets();
-	movePotatoes();
-    drawPlayer();
-	drawBullets();
-	drawPotatoes();
-	gameOverHandler();
-	}
-	if(killCount<potatoesLayout.rows*potatoesLayout.columns && player.lives>0){
+	if(player.lives>0){
 		timer += 0.01;
 	}
 }

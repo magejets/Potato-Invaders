@@ -38,13 +38,17 @@ var timer;
 var potatoesLayout;
 var potatoes;
 var potatoBullets;
-var player;
+var player = {x:canvas.width/2, 
+		y:canvas.height-30,
+		width: 25, 
+		height: 20,
+		lives: 3};;
 var playerBullet;
 var potatoBullet;
-
+var level = 1;
 function setupVars(){
 //initial speed of the potato
-potatoDirection = 1;
+potatoDirection = 1+Math.floor(level/10);
 //how many potatoes have been killed
 killCount = 0;
 //Keeps track of time
@@ -52,33 +56,32 @@ timer = 0;
 //dictionary holding info for the potato grid
 potatoesLayout = {
 	rows: 4,
-	columns: 6,
+	columns: Math.floor(6+level/10),
 	width: 14,
 	height: 14,
 	padding: 10,
 	xOffset: 10,
-	yOffset: 30
+	yOffset: 30+level
 }
 //actual potato grid, and grid for its bullets
 potatoes = [];
 potatoBullets = [];
 //player dictionaries
 player = {x:canvas.width/2, 
-		y:canvas.height-30,
-		width: 25, 
-		height: 20,
-		lives: 3};
+	y:canvas.height-30,
+	width: 25+Math.floor(level/2), 
+	height: 20};
 playerBullet = {x:-10, 
-				y:-10, 
-				width: 3,
-				height: 5,
-				firing:false};
+		y:-10, 
+		width: 3,
+		height: 5,
+		firing:false};
 //dictionary with information on potato bullets
 potatoBullet = {x:-10,
-				y:-10,
-				width:3,
-				height:3,
-				firing:false};
+		y:-10,
+		width:3,
+		height:3,
+		firing:false};
 					
 //initializes the potato matrix
 for(var c=0; c<potatoesLayout.columns; c++){
@@ -157,7 +160,7 @@ function movePotatoes(){
 	potatoesLayout.xOffset += potatoDirection;
 	if(potatoesLayout.xOffset+potatoesLayout.columns*(potatoesLayout.width+potatoesLayout.padding)>canvas.width || potatoesLayout.xOffset<0){
 		potatoDirection *= -1;
-		potatoesLayout.yOffset +=4;
+		potatoesLayout.yOffset +=4+Math.floor(level/10);
 	}
 }
 

@@ -219,16 +219,10 @@ function drawMessage(text){
 	ctx.fillText("Refresh the page to restart.", canvas.width/2,canvas.height/2+30);
 	
 }
-//stops the code for a certain amount of time used between levels
-function sleep(delay){
-	var start = new Date().getTime();
-        while (new Date().getTime() < start + delay);
-}
 //decides when the game is over, and who wins
 function gameOverHandler(){
 	if(player.lives <= 0){
 		ctx.clearRect(0,0,canvas.width,canvas.height);
-		//sleep(100);
 		drawMessage("The Potatoes Have Defeated You!");
 		displayLives();
 	}

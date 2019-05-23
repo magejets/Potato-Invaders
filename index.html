@@ -10,14 +10,29 @@
 
 <body style="background-image:url(https://cdn.pixabay.com/photo/2013/11/26/20/19/potato-218865_1280.jpg)">
 
+<div id="left">
 <h1>Potato Invaders</h1>
 <h3>By Mason Lewis</h3>
 <canvas id="myCanvas" width="480" height="320"></canvas>
 <p></p>
 <input type="button" value="Restart" onClick="document.location.reload(true)">
 <p style = "color: white">Use the arrow keys to move left and right, up to shoot</p>
+</div>
 
-<style>canvas { background: #eee; }</style>
+<div id="right">
+<p id = "highScore"></p>
+<p>View the open source Git repository at https://github.com/magejets/Potato-Invaders</p>
+</div>
+
+<style>
+canvas { background: #eee; }
+#left{
+float: left
+}
+#right{
+float: right
+}
+</style>
 
 <script>
 
@@ -43,26 +58,27 @@ var player = {x:canvas.width/2,
 			y:canvas.height-30,
 			width: 25, 
 			height: 20,
-			lives: 3};;
+			lives: 3};
 var playerBullet;
 var potatoBullet;
 var level = 1;
 var score = 0;
 var timer = 0;
+var hitRect = 0;
 function setupVars(){
 	//initial speed of the potato
-	potatoDirection = 1+Math.floor(level/10);
+	potatoDirection = 1+level/10;
 	//how many potatoes have been killed
 	killCount = 0;
 	//dictionary holding info for the potato grid
 	potatoesLayout = {
 		rows: 4,
-		columns: 6+Math.floor(level/15),
+		columns: 6+Math.floor(level/7),
 		width: 14-Math.floor(level/7),
 		height: 14,
 		padding: 10,
 		xOffset: 10,
-		yOffset: 30+Math.floor(level/3)
+		yOffset: 30+level
 	}
 	if(potatoesLayout.columns>12){
 		potatoesLayout.columns = 12;
@@ -76,6 +92,9 @@ function setupVars(){
 			width: 25+Math.floor(level/2), 
 			height: 20,
 			lives: player.lives};
+	if(player.width>40){
+		player.width=40;
+	}
 	playerBullet = {x:-10, 
 					y:-10, 
 					width: 3,
@@ -175,6 +194,18 @@ function random(min,max){
   return Math.random() * (max - min) + min;
 }
 
+//saves a high score to the browser cache
+function highScore(){
+
+	if (typeof(Storage) !== "undefined") {
+		if(localStorage.getItem("highScore")== "undefined"){
+			localStorage.setItem("highScore", score);
+		}
+		if(score>localStorage.getItem("highScore")){
+			localStorage.setItem("highScore", score);
+		}
+	}
+}
 //moves all the bullets
 function updateBullets(){
 	if(playerBullet.firing == true){
@@ -185,7 +216,7 @@ function updateBullets(){
 			var bullet = potatoBullets[c][r];
 			var tater = potatoes[c][r];
 			if(tater.status == 1){
-				if(bullet.firing == false && random(-100+level,1)>0){
+				if(bullet.firing == false && random(-100+2*level,1)>0){
 					bullet.firing = true;
 					bullet.x = tater.x+tater.width/2;
 					bullet.y = tater.y;
@@ -196,6 +227,7 @@ function updateBullets(){
 				bullet.y +=1.5;
 			}
 			if(touching(bullet,player)){
+				hitRect = 75;
 				player.lives -=1;
 			}
 			if(bullet.y>canvas.height || touching(bullet,player)){
@@ -240,6 +272,7 @@ function gameOverHandler(){
 		ctx.clearRect(0,0,canvas.width,canvas.height);
 		drawMessage("The Potatoes Have Defeated You!");
 		displayLives();
+		highScore();
 	}
 	for(var c = 0; c<potatoesLayout.columns; c++){
 		for(var r = 0; r<potatoesLayout.rows; r++){
@@ -249,6 +282,7 @@ function gameOverHandler(){
 					ctx.clearRect(0,0,canvas.width,canvas.height);
 					drawMessage("The Potatoes Have Defeated You!");
 					displayLives();
+					highScore();
 				}
 			}
 		}
@@ -309,6 +343,7 @@ function displayLives(){
 	ctx.fillText("Player Lives: "+player.lives,50,20);
 	ctx.fillText("Score: "+score,150,20);
 	ctx.fillText("Level: "+level,canvas.width-100,20);
+	document.getElementById("highScore").innerHTML = "Personal Best: "+localStorage.getItem("highScore");
 }
 
 setupVars();
@@ -326,6 +361,14 @@ function main() {
 			playerBullet.firing = true;
 			playerBullet.x = player.x+(player.width/2);
 			playerBullet.y = player.y;
+		}
+		if(hitRect>0){
+			hitRect -=1;
+			ctx.beginPath();
+			ctx.strokeStyle = "#ff0000";
+			ctx.lineWidth = 5;
+			ctx.strokeRect(0,0,canvas.width,canvas.height);
+			ctx.closePath();
 		}
 		collisionPotatoes();
 		displayLives();

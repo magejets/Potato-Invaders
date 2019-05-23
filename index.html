@@ -21,7 +21,8 @@
 
 <div id="right">
 <p id = "highScore"></p>
-<p>View the open source Git repository at https://github.com/magejets/Potato-Invaders</p>
+<p>View the source code at</p>
+<a href = "https://github.com/magejets/Potato-Invaders" target = "_blank">www.github.com/magejets/Potato-Invaders</a>
 </div>
 
 <style>
@@ -201,7 +202,7 @@ function highScore(){
 		if(localStorage.getItem("highScore")== "undefined"){
 			localStorage.setItem("highScore", score);
 		}
-		if(score>localStorage.getItem("highScore")){
+		if(score>localStorage.getItem("highScore")&& (score/level)<600){
 			localStorage.setItem("highScore", score);
 		}
 	}

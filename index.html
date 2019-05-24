@@ -16,14 +16,14 @@
 <canvas id="myCanvas" width="480" height="320"></canvas>
 <p></p>
 <input type="button" value="Restart" onClick="restart();">
-<p style = "color: white">Use the arrow keys to move left and right, up to shoot</p>
+<p style = "color: white">Use the arrow/WASD keys to move left and right, up to shoot</p>
 </div>
 
 <div id="right">
 <p id = "highScore"></p>
 <p>View the source code at</p>
 <a href = "https://github.com/magejets/Potato-Invaders" target = "_blank">www.github.com/magejets/Potato-Invaders</a>
-<h3>DO NOT REFRESH, USE THE RESTART BUTTON!</h3>	
+<h3>DO NOT REFRESH, USE THE RESTART BUTTON!</h3>
 </div>
 
 <style>
@@ -93,7 +93,10 @@ function setupVars(){
 			y:canvas.height-30,
 			width: 25+Math.floor(level/2), 
 			height: 20,
-			lives: player.lives+Math.floor(level/7)};
+			lives: player.lives};
+	if(level%7 == 0){
+		player.lives+=1;
+	}
 	if(player.width>40){
 		player.width=40;
 	}
@@ -294,8 +297,8 @@ function gameOverHandler(){
 				if(tater.y>player.y){
 					ctx.clearRect(0,0,canvas.width,canvas.height);
 					drawMessage("The Potatoes Have Defeated You!");
-					displayLives();
 					highScore();
+					displayLives();
 				}
 			}
 		}
@@ -311,24 +314,24 @@ function gameOverHandler(){
 
 //the next 2 functions are for keyboard input
 function keyDownHandler(e){
-	if(e.key == "Right" || e.key == "ArrowRight"){
+	if(e.key == "Right" || e.key == "ArrowRight" || e.key == "d"){
 		rightPressed = true;
 	}
-	if(e.key == "Left" || e.key == "ArrowLeft"){
+	if(e.key == "Left" || e.key == "ArrowLeft" || e.key == "a"){
 		leftPressed = true;
 	}
-	if(e.key == "Up" || e.key == "ArrowUp"){
+	if(e.key == "Up" || e.key == "ArrowUp" || e.key == "w"){
 		upPressed = true;
 	}
 }
 function keyUpHandler(e){
-	if(e.key == "Right" || e.key == "ArrowRight"){
+	if(e.key == "Right" || e.key == "ArrowRight" || e.key == "d"){
 		rightPressed = false;
 	}
-	if(e.key == "Left" || e.key == "ArrowLeft"){
+	if(e.key == "Left" || e.key == "ArrowLeft" || e.key == "a"){
 		leftPressed = false;
 	}
-	if(e.key == "Up" || e.key == "ArrowUp"){
+	if(e.key == "Up" || e.key == "ArrowUp" || e.key == "w"){
 		upPressed = false;
 	}
 }
